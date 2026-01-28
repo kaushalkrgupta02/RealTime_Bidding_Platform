@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
+// import Login from './components/Login';
 import './App.css';
 
 const socket = io('http://localhost:3000');
@@ -9,6 +10,8 @@ function App() {
   const [items, setItems] = useState([]);
   const [connected, setConnected] = useState(false);
   const [userId] = useState(`user_${Math.random().toString(36).substr(2, 9)}`);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     // Socket connection
@@ -22,19 +25,21 @@ function App() {
       setConnected(false);
     });
 
-    // Load items
-    fetchItems();
+    // Load items only if logged in
+    if (isLoggedIn) {
+      fetchItems();
+    }
 
     return () => {
       socket.off('connect');
       socket.off('disconnect');
     };
-  }, []);
+  }, [isLoggedIn]);
 
   const fetchItems = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/items');
-      setItems(response.data);
+      setItems(response.data.data || []);
     } catch (error) {
       console.error('Failed to fetch items:', error);
     }
@@ -47,6 +52,16 @@ function App() {
       userId,
       bidAmount
     });
+  };
+
+  const handleLogin = (name) => {
+    setUserName(name);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserName('');
   };
 
   useEffect(() => {
@@ -68,6 +83,10 @@ function App() {
     };
   }, []);
 
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -76,7 +95,10 @@ function App() {
           <span className={`dot ${connected ? 'connected' : 'disconnected'}`}></span>
           {connected ? 'Connected' : 'Disconnected'}
         </div>
-        <div className="user">User: {userId}</div>
+        <div className="user-info">
+          <span>Welcome, {userName}!</span>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+        </div>
       </header>
 
       <main className="main">
@@ -87,7 +109,7 @@ function App() {
               <div className="price">${item.currentBid}</div>
               <div className="info">
                 <span>Starting: ${item.startingPrice}</span>
-                <span>Bids: {item.bidCount}</span>
+                <span>Time Left: {Math.floor(item.timeRemaining / 60000)}m</span>
               </div>
               <button
                 className="bid-btn"

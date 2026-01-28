@@ -14,7 +14,7 @@ export const items = [
   },
   {
     id: 2,
-    title: 'Vintage Guitar',
+    title: 'Classic Guitar',
     startingPrice: 300,
     currentBid: 450,
     highestBidder: 'user_456',
