@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
-// import Login from './components/Login';
+import Login from './components/Login';
+import { ItemCard } from './components/ItemCard';
 import './App.css';
 
 const socket = io('http://localhost:3000');
@@ -12,6 +13,9 @@ function App() {
   const [userId] = useState(`user_${Math.random().toString(36).substr(2, 9)}`);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [flashingItems, setFlashingItems] = useState(new Set());
+  const [outbidItems, setOutbidItems] = useState(new Set());
+  const [serverTimeOffset, setServerTimeOffset] = useState(0);
 
   useEffect(() => {
     // Socket connection
@@ -40,17 +44,18 @@ function App() {
     try {
       const response = await axios.get('http://localhost:3000/api/items');
       setItems(response.data.data || []);
+      // Calculate server time offset
+      setServerTimeOffset(response.data.serverTime - Date.now());
     } catch (error) {
       console.error('Failed to fetch items:', error);
     }
   };
 
-  const handleBid = (itemId, currentBid) => {
-    const bidAmount = currentBid + 10;
+  const handleBid = (itemId, bidAmount) => {
     socket.emit('BID_PLACED', {
       itemId,
-      userId,
-      bidAmount
+      bidderId: userId,
+      amount: bidAmount
     });
   };
 
@@ -68,11 +73,41 @@ function App() {
     // Listen for bid updates
     const handleUpdateBid = (data) => {
       setItems(prevItems =>
-        prevItems.map(item =>
-          item.id === data.itemId
-            ? { ...item, currentBid: data.currentBid, highestBidder: data.highestBidder }
-            : item
-        )
+        prevItems.map(item => {
+          if (item.id === data.itemId) {
+            const wasWinning = item.highestBidder === userId;
+            const isNowWinning = data.highestBidder === userId;
+
+            // Add flashing effect for the updated item
+            setFlashingItems(prev => new Set([...prev, data.itemId]));
+            setTimeout(() => {
+              setFlashingItems(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(data.itemId);
+                return newSet;
+              });
+            }, 600);
+
+            // Handle outbid logic
+            if (wasWinning && !isNowWinning) {
+              setOutbidItems(prev => new Set([...prev, data.itemId]));
+              setTimeout(() => {
+                setOutbidItems(prev => {
+                  const newSet = new Set(prev);
+                  newSet.delete(data.itemId);
+                  return newSet;
+                });
+              }, 3000);
+            }
+
+            return {
+              ...item,
+              currentBid: data.currentBid,
+              highestBidder: data.highestBidder
+            };
+          }
+          return item;
+        })
       );
     };
 
@@ -81,7 +116,7 @@ function App() {
     return () => {
       socket.off('UPDATE_BID', handleUpdateBid);
     };
-  }, []);
+  }, [userId]);
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
@@ -104,23 +139,15 @@ function App() {
       <main className="main">
         <div className="items-grid">
           {items.map(item => (
-            <div key={item.id} className="item-card">
-              <h3>{item.title}</h3>
-              <div className="price">${item.currentBid}</div>
-              <div className="info">
-                <span>Starting: ${item.startingPrice}</span>
-                <span>Time Left: {Math.floor(item.timeRemaining / 60000)}m</span>
-              </div>
-              <button
-                className="bid-btn"
-                onClick={() => handleBid(item.id, item.currentBid)}
-              >
-                Bid +$10
-              </button>
-              {item.highestBidder === userId && (
-                <div className="winning">You're winning!</div>
-              )}
-            </div>
+            <ItemCard
+              key={item.id}
+              item={item}
+              onBid={handleBid}
+              currentUserId={userId}
+              isFlashing={flashingItems.has(item.id)}
+              isOutbid={outbidItems.has(item.id)}
+              serverTimeOffset={serverTimeOffset}
+            />
           ))}
         </div>
       </main>
