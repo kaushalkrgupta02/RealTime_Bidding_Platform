@@ -1,4 +1,4 @@
-import { items, itemMutexes } from "../data/dummyData.js";
+import { items, itemMutexes } from "../data/item_data.js";
 
 export const auctionSocket = (io, socket) => {
   console.log("User connected:", socket.id);

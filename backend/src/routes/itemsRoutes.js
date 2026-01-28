@@ -1,5 +1,5 @@
 import express from "express";
-import { items } from "../data/dummyData.js";
+import { items } from "../data/item_data.js";
 
 const router = express.Router();
 
