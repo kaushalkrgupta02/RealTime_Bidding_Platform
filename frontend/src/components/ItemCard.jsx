@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { addToast } from "./Toast";
 import "./ItemCard.css";
 
 export function ItemCard({
@@ -13,9 +14,47 @@ export function ItemCard({
     item.auctionEndTime - (Date.now() + serverTimeOffset),
   );
   const [prevBid, setPrevBid] = useState(item.currentBid);
+  const [notifiedUrgent, setNotifiedUrgent] = useState(false);
+  const [notifiedEnded, setNotifiedEnded] = useState(false);
+  const [notifiedWinning, setNotifiedWinning] = useState(false);
+  const [notifiedOutbid, setNotifiedOutbid] = useState(false);
+  
   const isWinning = item.highestBidder === currentUserId;
   const isAuctionEnded = timeRemaining <= 0;
   const isUrgent = timeRemaining < 60000; // Less than 1 minute
+
+  // Notify when auction is ending soon
+  useEffect(() => {
+    if (isUrgent && !notifiedUrgent && timeRemaining > 0) {
+      setNotifiedUrgent(true);
+      addToast(`⏰ "${item.title}" ending in ${Math.ceil(timeRemaining / 1000)}s!`, 'warning', 4000);
+    }
+  }, [isUrgent, notifiedUrgent, timeRemaining, item.title]);
+
+  // Notify when auction ends
+  useEffect(() => {
+    if (isAuctionEnded && !notifiedEnded) {
+      setNotifiedEnded(true);
+      const winner = item.highestBidder.replace('user_', '').slice(0, 7);
+      addToast(`🏆 "${item.title}" - Winner: ${winner}`, 'info', 5000);
+    }
+  }, [isAuctionEnded, notifiedEnded, item.title, item.highestBidder]);
+
+  // Notify when user wins
+  useEffect(() => {
+    if (isWinning && !notifiedWinning && !isAuctionEnded) {
+      setNotifiedWinning(true);
+      addToast(`👑 You are the highest bidder for "${item.title}"!`, 'success', 3000);
+    }
+  }, [isWinning, notifiedWinning, isAuctionEnded, item.title]);
+
+  // Notify when user is outbid
+  useEffect(() => {
+    if (!isWinning && prevBid < item.currentBid && !notifiedOutbid) {
+      setNotifiedOutbid(true);
+      addToast(`⚠️ You were outbid on "${item.title}"`, 'warning', 3000);
+    }
+  }, [isWinning, prevBid, item.currentBid, notifiedOutbid, item.title]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,7 +90,7 @@ export function ItemCard({
 
   const bidderName = item.highestBidder
     .replace("user_", "")
-    .slice(0, 12);
+    .slice(0, 7);
 
   return (
     <div
@@ -76,38 +115,21 @@ export function ItemCard({
 
       {/* Main Content */}
       <div className="card-body">
-        {/* Price Section */}
-        <div className="price-section">
-          <span className="section-label">Current Bid</span>
-          <div className="price-display">
-            <span className="currency">$</span>
-            <span className="price-value">{item.currentBid.toLocaleString()}</span>
+        {/* Compact Info Row */}
+        <div className="compact-info">
+          <div className="info-item">
+            <span className="info-label">Bid</span>
+            <span className="info-value">${item.currentBid.toLocaleString()}</span>
           </div>
-        </div>
-
-        {/* Timer Section */}
-        <div className={`timer-section ${isUrgent ? "urgent" : ""} ${isAuctionEnded ? "ended" : ""}`}>
-          <div className="timer-label">
-            <span className="timer-icon">⏱️</span>
-            <span className="section-label">Time Left</span>
+          <div className="info-item">
+            <span className="info-label">Bidder</span>
+            <span className="info-value">{bidderName}</span>
           </div>
-          <div className="timer-display">
-            {isAuctionEnded ? (
-              <span className="ended-text">Auction Ended</span>
-            ) : (
-              <span className={`time-value ${isUrgent ? "blink" : ""}`}>
-                {formatTime(timeRemaining)}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Bidder Info */}
-        <div className="bidder-section">
-          <span className="section-label">Highest Bidder</span>
-          <div className="bidder-name">
-            <span className="bidder-avatar">{bidderName.charAt(0).toUpperCase()}</span>
-            <span className="bidder-text">{bidderName}</span>
+          <div className={`info-item time-item ${isUrgent ? "urgent" : ""} ${isAuctionEnded ? "ended" : ""}`}>
+            <span className="info-label">⏱️</span>
+            <span className={`info-value ${isUrgent ? "blink" : ""}`}>
+              {isAuctionEnded ? "Ended" : formatTime(timeRemaining)}
+            </span>
           </div>
         </div>
       </div>
@@ -121,7 +143,7 @@ export function ItemCard({
         >
           <span className="button-icon">{isAuctionEnded ? "🔒" : "💰"}</span>
           <span className="button-text">
-            {isAuctionEnded ? "Auction Closed" : "Bid +$10"}
+            {isAuctionEnded ? "Closed" : "Bid +$10"}
           </span>
         </button>
       </div>

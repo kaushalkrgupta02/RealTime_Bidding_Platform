@@ -3,6 +3,7 @@ import Login from './components/Login';
 import { ItemCard } from './components/ItemCard';
 import { useAuctionSocket } from './hooks/auctionSocket';
 import { fetchItems } from './services/item';
+import { Toast, addToast } from './components/Toast';
 import './App.css';
 
 function App() {
@@ -78,14 +79,15 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>Live Bidding Platform</h1>
+        <h1>⚡ Real Time Bidding Platform</h1>
         <div className="status">
           <span className={`dot ${connectionStatus === 'Connected' ? 'connected' : 'disconnected'}`}></span>
           {connectionStatus}
+          <span className="status-date">• {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
         </div>
         <div className="user-info">
-          <span>Welcome, {userName}!</span>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
+          <span className="username">👤 {userName}</span>
+          <button onClick={handleLogout} className="logout-btn"><span className="exit-icon">🚪</span><span>Exit</span></button>
         </div>
       </header>
 
@@ -112,6 +114,7 @@ function App() {
           </div>
         )}
       </main>
+      <Toast />
     </div>
   );
 }
