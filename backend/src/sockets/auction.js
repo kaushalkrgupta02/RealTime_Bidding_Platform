@@ -1,9 +1,7 @@
 import { items, itemMutexes } from "../data/item_data.js";
 
 export const auctionSocket = (io, socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("BID_PLACED", async ({ itemId, userId, userName, amount }) => {
+  socket.on("BID_PLACED", async ({ itemId, userId: bidUserId, userName: bidUserName, amount }) => {
     const item = items.find(i => i.id === itemId);
     const mutex = itemMutexes.get(itemId);
 
@@ -35,11 +33,11 @@ export const auctionSocket = (io, socket) => {
       }
 
       item.currentBid = amount;
-      item.highestBidder = userName;
-      item.highestBidderId = userId;
+      item.highestBidder = bidUserName;
+      item.highestBidderId = bidUserId;
       item.bidHistory.push({ 
-        userId,
-        userName,
+        userId: bidUserId,
+        userName: bidUserName,
         amount, 
         timestamp: now 
       });
@@ -47,8 +45,8 @@ export const auctionSocket = (io, socket) => {
       io.emit("UPDATE_BID", {
         itemId,
         currentBid: amount,
-        highestBidder: userName,
-        highestBidderId: userId,
+        highestBidder: bidUserName,
+        highestBidderId: bidUserId,
         timestamp: now
       });
 
@@ -56,12 +54,10 @@ export const auctionSocket = (io, socket) => {
         success: true,
         message: "Bid accepted"
       });
-
-      console.log(`Bid accepted: Item ${itemId} -> $${amount} by ${userName} (${userId})`);
     });
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    // User disconnected
   });
 };

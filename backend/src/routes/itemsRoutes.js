@@ -12,6 +12,7 @@ router.get("/", (req, res) => {
       startingPrice: item.startingPrice,
       currentBid: item.currentBid,
       highestBidder: item.highestBidder,
+      highestBidderId: item.highestBidderId,
       auctionEndTime: item.auctionEndTime,
       timeRemaining: Math.max(0, item.auctionEndTime - Date.now())
     })),

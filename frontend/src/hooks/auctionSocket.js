@@ -12,10 +12,12 @@ export const useAuctionSocket = (currentUserId, setItems, userName) => {
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL_LOCAL || "http://localhost:3000";
 
-    console.log("Socket Backend URL:", backendUrl);
-
     const newSocket = io(backendUrl, {
       reconnection: true,
+      query: {
+        userId: currentUserId,
+        userName: userName
+      }
     });
 
     newSocket.on("connect", () => {
@@ -76,7 +78,7 @@ export const useAuctionSocket = (currentUserId, setItems, userName) => {
     setSocket(newSocket);
 
     return () => newSocket.disconnect();
-  }, [currentUserId, userName, setItems]);
+  }, [currentUserId, setItems]);
 
   const placeBid = (itemId, amount) => {
     if (!socket) return;

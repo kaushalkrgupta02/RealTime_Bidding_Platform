@@ -13,6 +13,7 @@ function App() {
   const [userName, setUserName] = useState('');
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   const { connectionStatus, flashingItems, outbidItems, placeBid } = useAuctionSocket(
     isLoggedIn ? userId : null,
@@ -24,12 +25,15 @@ function App() {
     if (isLoggedIn) {
       const loadItems = async () => {
         setLoading(true);
+        setError(null);
         try {
           const response = await fetchItems();
           setItems(response.data || []);
           setServerTimeOffset(response.serverTime - Date.now());
         } catch (error) {
           console.error('Failed to fetch items:', error);
+          setError(`Failed to load items: ${error.message}`);
+          setItems([]);
         } finally {
           setLoading(false);
         }
@@ -51,27 +55,6 @@ function App() {
     setIsLoggedIn(false);
     setUserName('');
   };
-
-  useEffect(() => {
-    // Listen for bid updates
-    const handleUpdateBid = (data) => {
-      setItems(prevItems =>
-        prevItems.map(item => {
-          if (item.id === data.itemId) {
-            return {
-              ...item,
-              currentBid: data.currentBid,
-              highestBidder: data.highestBidder
-            };
-          }
-          return item;
-        })
-      );
-    };
-
-    // Note: Socket event listeners are handled in useAuctionSocket hook
-    // This effect is now simplified
-  }, []);
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
@@ -95,11 +78,13 @@ function App() {
 
       <main className="main">
         {loading ? (
-          <div className="loading">Loading items...</div>
+          <div className="loading">⏳ Loading items...</div>
+        ) : error ? (
+          <div className="error-message">{error}</div>
         ) : (
           <div className="items-grid">
             {items.length === 0 ? (
-              <div className="no-items">No items available</div>
+              <div className="no-items">📭 No items available</div>
             ) : (
               items.map(item => (
                 <ItemCard

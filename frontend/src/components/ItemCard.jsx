@@ -20,7 +20,7 @@ export function ItemCard({
   const [notifiedWinning, setNotifiedWinning] = useState(false);
   const [notifiedOutbid, setNotifiedOutbid] = useState(false);
   
-  const isWinning = item.highestBidderId === currentUserId;
+  const isWinning = item.highestBidderId && item.highestBidderId === currentUserId;
   const isAuctionEnded = timeRemaining <= 0;
   const isUrgent = timeRemaining < 60000; // Less than 1 minute
 
@@ -36,7 +36,7 @@ export function ItemCard({
   useEffect(() => {
     if (isAuctionEnded && !notifiedEnded) {
       setNotifiedEnded(true);
-      const winner = item.highestBidder.length > 8 ? item.highestBidder.slice(0, 8) : item.highestBidder;
+      const winner = item.highestBidder || '';
       addNotification(`🏆 "${item.title}" - Winner: ${winner}`, 'info');
     }
   }, [isAuctionEnded, notifiedEnded, item.title, item.highestBidder]);
@@ -89,9 +89,7 @@ export function ItemCard({
     onBid(item.id, item.currentBid + 10);
   };
 
-  const bidderName = item.highestBidder.length > 8 
-    ? item.highestBidder.slice(0, 8) 
-    : item.highestBidder;
+  const bidderName = item.highestBidder || '';
 
   return (
     <div
