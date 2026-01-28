@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import axios from 'axios';
 import './App.css';
 
-const socket = io('http://localhost:5000');
+const socket = io('http://localhost:3000');
 
 function App() {
   const [items, setItems] = useState([]);
@@ -33,7 +33,7 @@ function App() {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/items');
+      const response = await axios.get('http://localhost:3000/api/items');
       setItems(response.data);
     } catch (error) {
       console.error('Failed to fetch items:', error);

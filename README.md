@@ -66,7 +66,7 @@ live_bidding_platform/
 
 4. **Access the application:**
    - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
+   - Backend API: http://localhost:3000
 
 ### Docker Setup
 
@@ -82,6 +82,25 @@ docker-compose up frontend
 ## API Endpoints
 
 - `GET /api/items` - Get all auction items
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "title": "Indian Cricket Jersey",
+        "startingPrice": 500,
+        "currentBid": 850,
+        "highestBidder": "user_123",
+        "auctionEndTime": 1704123456789,
+        "timeRemaining": 3600000
+      }
+    ],
+    "serverTime": 1704123456789
+  }
+  ```
+
+- `GET /api/items/:id` - Get specific auction item
 
 ## Socket Events
 
@@ -89,28 +108,30 @@ docker-compose up frontend
 - `BID_PLACED` - Place a new bid
   ```json
   {
-    "itemId": "uuid",
-    "userId": "string",
-    "bidAmount": 150
+    "itemId": 1,
+    "bidderId": "user_123",
+    "amount": 900
   }
   ```
 
 ### Server → Clients
 - `UPDATE_BID` - Broadcast new highest bid
-- `AUCTION_ENDED` - Notify when auction ends
+- `BID_RESPONSE` - Response to bid attempt
+- `OUTBID` - Notify when bid is too low
 
 ## Environment Variables
 
 ### Backend (.env)
 ```
-PORT=5000
 NODE_ENV=development
+FRONTEND_URL_LOCAL=http://localhost:5173
+FRONTEND_URL_PRODUCTION=http://localhost:5173
 ```
 
 ### Frontend (.env.local)
 ```
-REACT_APP_BACKEND_URL=http://localhost:5000
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_BACKEND_URL=http://localhost:3000
+REACT_APP_API_URL=http://localhost:3000/api
 ```
 
 ## Development

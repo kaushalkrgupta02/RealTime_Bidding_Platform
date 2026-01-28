@@ -1,63 +1,47 @@
-import express from 'express';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-dotenv.config();
+import itemRoutes from "./routes/itemsRoutes.js";
+import { auctionSocket } from "./sockets/auction.js";
 
 const app = express();
+
+const isDevelopment = process.env.NODE_ENV !== "production";
+const frontendUrl = isDevelopment
+  ? process.env.FRONTEND_URL_LOCAL || "http://localhost:5173"
+  : process.env.FRONTEND_URL_PRODUCTION || "http://localhost:5173";
+
+console.log("Frontend URL:", frontendUrl);
+
+app.use(cors({
+  origin: [frontendUrl, "http://localhost:5173"],
+  credentials: true
+}));
+app.use(express.json());
+
+
+app.get("/", (req, res) => {
+  res.send("Backend is running");
+});
+
+app.use("/api/items", itemRoutes);
+
 const httpServer = createServer(app);
-
-const isProduction = process.env.NODE_ENV === 'production';
-const configuredCorsOrigin = process.env.CORS_ORIGIN;
-
-if (!configuredCorsOrigin) {
-  const message = 'CORS_ORIGIN environment variable is not set.';
-  if (isProduction) {
-    throw new Error(
-      message + ' Refusing to start server in production without explicit CORS configuration.'
-    );
-  } else {
-    console.warn(
-      message + ' Falling back to http://localhost:3000 for development use only.'
-    );
-  }
-}
-
-const effectiveCorsOrigin = configuredCorsOrigin || 'http://localhost:3000';
 
 const io = new Server(httpServer, {
   cors: {
-    origin: effectiveCorsOrigin,
-    methods: ['GET', 'POST']
+    origin: [frontendUrl, "http://localhost:5173", "http://localhost:3000"],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
-const PORT = process.env.PORT || 5000;
+io.on("connection", (socket) => auctionSocket(io, socket));
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Import routes and socket handlers
-import itemsRouter from './api/items.js';
-import setupSocketHandlers from './socket/bidding.js';
-
-// Routes
-app.use('/api', itemsRouter);
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
-// Socket.io handlers
-setupSocketHandlers(io);
-
-// Start server
+const PORT = 3000;
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
-
-export default app;
