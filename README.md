@@ -61,7 +61,7 @@ live_bidding_platform/
    cd frontend
    npm install
    cp .env.example .env.local
-   npm start
+   npm run dev
    ```
 
 4. **Access the application:**
