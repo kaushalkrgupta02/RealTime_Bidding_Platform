@@ -9,10 +9,7 @@ import { auctionSocket } from "./sockets/auction.js";
 
 const app = express();
 
-const isDevelopment = process.env.NODE_ENV !== "production";
-const frontendUrl = isDevelopment
-  ? process.env.FRONTEND_URL_LOCAL || "http://localhost:5173"
-  : process.env.FRONTEND_URL_PRODUCTION || "http://localhost:5173";
+const frontendUrl = process.env.FRONTEND_URL_LOCAL || "http://localhost:5173";
 
 console.log("Frontend URL:", frontendUrl);
 

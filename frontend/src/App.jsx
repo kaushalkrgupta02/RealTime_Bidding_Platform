@@ -1,62 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-import axios from 'axios';
 import Login from './components/Login';
 import { ItemCard } from './components/ItemCard';
+import { useAuctionSocket } from './hooks/auctionSocket';
+import { fetchItems } from './services/item';
 import './App.css';
-
-const socket = io('http://localhost:3000');
 
 function App() {
   const [items, setItems] = useState([]);
-  const [connected, setConnected] = useState(false);
   const [userId] = useState(`user_${Math.random().toString(36).substr(2, 9)}`);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
-  const [flashingItems, setFlashingItems] = useState(new Set());
-  const [outbidItems, setOutbidItems] = useState(new Set());
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  
+  const { connectionStatus, flashingItems, outbidItems, placeBid } = useAuctionSocket(
+    isLoggedIn ? userId : null,
+    setItems
+  );
 
   useEffect(() => {
-    // Socket connection
-    socket.on('connect', () => {
-      console.log('Connected to server');
-      setConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-      setConnected(false);
-    });
-
-    // Load items only if logged in
     if (isLoggedIn) {
-      fetchItems();
+      const loadItems = async () => {
+        setLoading(true);
+        try {
+          const response = await fetchItems();
+          setItems(response.data || []);
+          setServerTimeOffset(response.serverTime - Date.now());
+        } catch (error) {
+          console.error('Failed to fetch items:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadItems();
     }
-
-    return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-    };
   }, [isLoggedIn]);
 
-  const fetchItems = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/api/items');
-      setItems(response.data.data || []);
-      // Calculate server time offset
-      setServerTimeOffset(response.data.serverTime - Date.now());
-    } catch (error) {
-      console.error('Failed to fetch items:', error);
-    }
-  };
-
   const handleBid = (itemId, bidAmount) => {
-    socket.emit('BID_PLACED', {
-      itemId,
-      bidderId: userId,
-      amount: bidAmount
-    });
+    placeBid(itemId, bidAmount);
   };
 
   const handleLogin = (name) => {
@@ -75,31 +56,6 @@ function App() {
       setItems(prevItems =>
         prevItems.map(item => {
           if (item.id === data.itemId) {
-            const wasWinning = item.highestBidder === userId;
-            const isNowWinning = data.highestBidder === userId;
-
-            // Add flashing effect for the updated item
-            setFlashingItems(prev => new Set([...prev, data.itemId]));
-            setTimeout(() => {
-              setFlashingItems(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(data.itemId);
-                return newSet;
-              });
-            }, 600);
-
-            // Handle outbid logic
-            if (wasWinning && !isNowWinning) {
-              setOutbidItems(prev => new Set([...prev, data.itemId]));
-              setTimeout(() => {
-                setOutbidItems(prev => {
-                  const newSet = new Set(prev);
-                  newSet.delete(data.itemId);
-                  return newSet;
-                });
-              }, 3000);
-            }
-
             return {
               ...item,
               currentBid: data.currentBid,
@@ -111,12 +67,9 @@ function App() {
       );
     };
 
-    socket.on('UPDATE_BID', handleUpdateBid);
-
-    return () => {
-      socket.off('UPDATE_BID', handleUpdateBid);
-    };
-  }, [userId]);
+    // Note: Socket event listeners are handled in useAuctionSocket hook
+    // This effect is now simplified
+  }, []);
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
@@ -127,8 +80,8 @@ function App() {
       <header className="header">
         <h1>Live Bidding Platform</h1>
         <div className="status">
-          <span className={`dot ${connected ? 'connected' : 'disconnected'}`}></span>
-          {connected ? 'Connected' : 'Disconnected'}
+          <span className={`dot ${connectionStatus === 'Connected' ? 'connected' : 'disconnected'}`}></span>
+          {connectionStatus}
         </div>
         <div className="user-info">
           <span>Welcome, {userName}!</span>
@@ -137,19 +90,27 @@ function App() {
       </header>
 
       <main className="main">
-        <div className="items-grid">
-          {items.map(item => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onBid={handleBid}
-              currentUserId={userId}
-              isFlashing={flashingItems.has(item.id)}
-              isOutbid={outbidItems.has(item.id)}
-              serverTimeOffset={serverTimeOffset}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="loading">Loading items...</div>
+        ) : (
+          <div className="items-grid">
+            {items.length === 0 ? (
+              <div className="no-items">No items available</div>
+            ) : (
+              items.map(item => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  onBid={handleBid}
+                  currentUserId={userId}
+                  isFlashing={flashingItems.has(item.id)}
+                  isOutbid={outbidItems.has(item.id)}
+                  serverTimeOffset={serverTimeOffset}
+                />
+              ))
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

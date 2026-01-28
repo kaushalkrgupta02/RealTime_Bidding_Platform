@@ -78,3 +78,17 @@
   gap: 20px;
   padding: 20px;
 }
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+.no-items {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #999;
+}

@@ -4,7 +4,7 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .login-container {
@@ -19,7 +19,7 @@
 
 .login-container h2 {
   margin-bottom: 24px;
-  color: var(--color-text);
+  color: #333;
   font-size: 24px;
   font-weight: 600;
 }
@@ -33,25 +33,26 @@
 .login-container label {
   text-align: left;
   font-weight: 500;
-  color: var(--color-text);
+  color: #333;
 }
 
 .login-container input {
   padding: 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 16px;
   transition: border-color 0.3s;
+  font-family: inherit;
 }
 
 .login-container input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: #667eea;
 }
 
 .login-container button {
   padding: 12px;
-  background: var(--color-primary);
+  background: #667eea;
   color: white;
   border: none;
   border-radius: 6px;
@@ -62,5 +63,5 @@
 }
 
 .login-container button:hover {
-  background: var(--color-primary-dark);
+  background: #5568d3;
 }

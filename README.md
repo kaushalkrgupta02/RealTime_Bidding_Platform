@@ -123,9 +123,8 @@ docker-compose up frontend
 
 ### Backend (.env)
 ```
-NODE_ENV=development
 FRONTEND_URL_LOCAL=http://localhost:5173
-FRONTEND_URL_PRODUCTION=http://localhost:5173
+PORT=3000
 ```
 
 ### Frontend (.env.local)
