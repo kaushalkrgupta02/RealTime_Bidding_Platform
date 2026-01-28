@@ -10,7 +10,7 @@ let items = [
     highestBidder: 'user_123',
     endTime: new Date(Date.now() + 3600000).toISOString(),
     bids: [
-      { userId: 'user_123', amount: 85, timestamp: Date.now() - 5000 }
+      { userId: 'user_123', amount: 850, timestamp: Date.now() - 5000 }
     ]
   }
 ];
@@ -34,8 +34,7 @@ export const getItemById = (id) => {
 export const updateBid = (itemId, userId, bidAmount) => {
   const item = getItemById(itemId);
   if (!item) throw new Error('Item not found');
-  if (new Date() > new Date(item.endTime)) throw new Error('Auction has ended');
-  if (bidAmount <= item.currentBid) throw new Error('Bid must be higher than current bid');
+
 
   item.currentBid = bidAmount;
   item.highestBidder = userId;

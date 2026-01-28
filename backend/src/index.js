@@ -8,9 +8,28 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
+const isProduction = process.env.NODE_ENV === 'production';
+const configuredCorsOrigin = process.env.CORS_ORIGIN;
+
+if (!configuredCorsOrigin) {
+  const message = 'CORS_ORIGIN environment variable is not set.';
+  if (isProduction) {
+    throw new Error(
+      message + ' Refusing to start server in production without explicit CORS configuration.'
+    );
+  } else {
+    console.warn(
+      message + ' Falling back to http://localhost:3000 for development use only.'
+    );
+  }
+}
+
+const effectiveCorsOrigin = configuredCorsOrigin || 'http://localhost:3000';
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: effectiveCorsOrigin,
     methods: ['GET', 'POST']
   }
 });

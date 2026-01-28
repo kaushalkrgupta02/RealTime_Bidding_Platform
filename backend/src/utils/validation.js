@@ -22,19 +22,19 @@ export const validateBid = (itemId, bidAmount) => {
     };
   }
 
+  if (!Number.isFinite(bidAmount) || bidAmount < 0) {
+    return {
+      valid: false,
+      reason: `Bid must be higher than ${item.currentBid}`,
+      code: 'INVALID_BID'
+    };
+  }
+
   if (bidAmount <= item.currentBid) {
     return {
       valid: false,
       reason: `Bid must be higher than $${item.currentBid}`,
       code: 'BID_TOO_LOW'
-    };
-  }
-
-  if (!Number.isFinite(bidAmount) || bidAmount < 0) {
-    return {
-      valid: false,
-      reason: 'Invalid bid amount',
-      code: 'INVALID_BID'
     };
   }
 

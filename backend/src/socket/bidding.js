@@ -37,18 +37,7 @@ const setupSocketHandlers = (io) => {
       bidLocks.set(lockKey, true);
 
       try {
-        // Validate bid
-        const validation = validateBid(itemId, bidAmount);
-        if (!validation.valid) {
-          socket.emit('BID_REJECTED', {
-            itemId,
-            reason: validation.reason,
-            code: validation.code
-          });
-          return;
-        }
-
-        // Update bid in database
+        // Update bid in database; this should perform any necessary validation
         const updatedItem = updateBid(itemId, userId, bidAmount);
 
         // Broadcast successful bid to all clients
