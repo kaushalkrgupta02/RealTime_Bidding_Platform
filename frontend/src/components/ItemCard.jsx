@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { addToast } from "./Toast";
+import { addNotification } from "./NotificationCenter";
 import "./ItemCard.css";
 
 export function ItemCard({
@@ -27,7 +27,7 @@ export function ItemCard({
   useEffect(() => {
     if (isUrgent && !notifiedUrgent && timeRemaining > 0) {
       setNotifiedUrgent(true);
-      addToast(`⏰ "${item.title}" ending in ${Math.ceil(timeRemaining / 1000)}s!`, 'warning', 4000);
+      addNotification(`⏰ "${item.title}" ending in ${Math.ceil(timeRemaining / 1000)}s!`, 'warning');
     }
   }, [isUrgent, notifiedUrgent, timeRemaining, item.title]);
 
@@ -35,8 +35,8 @@ export function ItemCard({
   useEffect(() => {
     if (isAuctionEnded && !notifiedEnded) {
       setNotifiedEnded(true);
-      const winner = item.highestBidder.replace('user_', '').slice(0, 7);
-      addToast(`🏆 "${item.title}" - Winner: ${winner}`, 'info', 5000);
+      const winner = item.highestBidder.length > 8 ? item.highestBidder.slice(0, 8) : item.highestBidder;
+      addNotification(`🏆 "${item.title}" - Winner: ${winner}`, 'info');
     }
   }, [isAuctionEnded, notifiedEnded, item.title, item.highestBidder]);
 
@@ -44,7 +44,7 @@ export function ItemCard({
   useEffect(() => {
     if (isWinning && !notifiedWinning && !isAuctionEnded) {
       setNotifiedWinning(true);
-      addToast(`👑 You are the highest bidder for "${item.title}"!`, 'success', 3000);
+      addNotification(`👑 You are the highest bidder for "${item.title}"!`, 'success');
     }
   }, [isWinning, notifiedWinning, isAuctionEnded, item.title]);
 
@@ -52,7 +52,7 @@ export function ItemCard({
   useEffect(() => {
     if (!isWinning && prevBid < item.currentBid && !notifiedOutbid) {
       setNotifiedOutbid(true);
-      addToast(`⚠️ You were outbid on "${item.title}"`, 'warning', 3000);
+      addNotification(`⚠️ You were outbid on "${item.title}"`, 'warning');
     }
   }, [isWinning, prevBid, item.currentBid, notifiedOutbid, item.title]);
 
@@ -88,9 +88,9 @@ export function ItemCard({
     onBid(item.id, item.currentBid + 10);
   };
 
-  const bidderName = item.highestBidder
-    .replace("user_", "")
-    .slice(0, 7);
+  const bidderName = item.highestBidder.length > 8 
+    ? item.highestBidder.slice(0, 8) 
+    : item.highestBidder;
 
   return (
     <div

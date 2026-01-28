@@ -3,7 +3,7 @@ import Login from './components/Login';
 import { ItemCard } from './components/ItemCard';
 import { useAuctionSocket } from './hooks/auctionSocket';
 import { fetchItems } from './services/item';
-import { Toast, addToast } from './components/Toast';
+import { NotificationCenter } from './components/NotificationCenter';
 import './App.css';
 
 function App() {
@@ -86,6 +86,7 @@ function App() {
           <span className="status-date">• {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
         </div>
         <div className="user-info">
+          <NotificationCenter />
           <span className="username">👤 {userName}</span>
           <button onClick={handleLogout} className="logout-btn"><span className="exit-icon">🚪</span><span>Exit</span></button>
         </div>
@@ -114,7 +115,6 @@ function App() {
           </div>
         )}
       </main>
-      <Toast />
     </div>
   );
 }
