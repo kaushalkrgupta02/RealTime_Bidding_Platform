@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: live-bidding-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - FRONTEND_URL_LOCAL=http://localhost:5173
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/node_modules:/app/node_modules
+    command: npm run dev
+    networks:
+      - bidding-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: live-bidding-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL_LOCAL=http://backend:3000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/node_modules:/app/node_modules
+    command: npm run dev
+    depends_on:
+      - backend
+    networks:
+      - bidding-network
+    restart: unless-stopped
+
+networks:
+  bidding-network:
+    driver: bridge
