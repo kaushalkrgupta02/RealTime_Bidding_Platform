@@ -3,7 +3,7 @@ import { items, itemMutexes } from "../data/item_data.js";
 export const auctionSocket = (io, socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("BID_PLACED", async ({ itemId, bidderId, amount }) => {
+  socket.on("BID_PLACED", async ({ itemId, userId, userName, amount }) => {
     const item = items.find(i => i.id === itemId);
     const mutex = itemMutexes.get(itemId);
 
@@ -35,13 +35,20 @@ export const auctionSocket = (io, socket) => {
       }
 
       item.currentBid = amount;
-      item.highestBidder = bidderId;
-      item.bidHistory.push({ bidderId, amount, timestamp: now });
+      item.highestBidder = userName;
+      item.highestBidderId = userId;
+      item.bidHistory.push({ 
+        userId,
+        userName,
+        amount, 
+        timestamp: now 
+      });
 
       io.emit("UPDATE_BID", {
         itemId,
         currentBid: amount,
-        highestBidder: bidderId,
+        highestBidder: userName,
+        highestBidderId: userId,
         timestamp: now
       });
 
@@ -50,7 +57,7 @@ export const auctionSocket = (io, socket) => {
         message: "Bid accepted"
       });
 
-      console.log(`Bid accepted: Item ${itemId} -> $${amount}`);
+      console.log(`Bid accepted: Item ${itemId} -> $${amount} by ${userName} (${userId})`);
     });
   });
 

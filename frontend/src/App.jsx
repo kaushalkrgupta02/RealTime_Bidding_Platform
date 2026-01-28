@@ -16,7 +16,8 @@ function App() {
   
   const { connectionStatus, flashingItems, outbidItems, placeBid } = useAuctionSocket(
     isLoggedIn ? userId : null,
-    setItems
+    setItems,
+    userName
   );
 
   useEffect(() => {
@@ -106,6 +107,7 @@ function App() {
                   item={item}
                   onBid={handleBid}
                   currentUserId={userId}
+                  currentUserName={userName}
                   isFlashing={flashingItems.has(item.id)}
                   isOutbid={outbidItems.has(item.id)}
                   serverTimeOffset={serverTimeOffset}

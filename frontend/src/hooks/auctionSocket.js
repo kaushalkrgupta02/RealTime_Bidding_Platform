@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-export const useAuctionSocket = (currentUserId, setItems) => {
+export const useAuctionSocket = (currentUserId, setItems, userName) => {
   const [socket, setSocket] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
   const [flashingItems, setFlashingItems] = useState(new Set());
@@ -26,12 +26,12 @@ export const useAuctionSocket = (currentUserId, setItems) => {
       setConnectionStatus("Disconnected");
     });
 
-    newSocket.on("UPDATE_BID", ({ itemId, currentBid, highestBidder }) => {
+    newSocket.on("UPDATE_BID", ({ itemId, currentBid, highestBidder, highestBidderId }) => {
       setItems((prev) =>
         prev.map((item) => {
           if (item.id === itemId) {
 
-            if (item.highestBidder === currentUserId && highestBidder !== currentUserId) {
+            if (item.highestBidderId === currentUserId && highestBidderId !== currentUserId) {
               setOutbidItems((prev) => new Set(prev).add(itemId));
 
               setTimeout(() => {
@@ -42,13 +42,13 @@ export const useAuctionSocket = (currentUserId, setItems) => {
                 });
               }, 2000);
             }
-            return { ...item, currentBid, highestBidder };
+            return { ...item, currentBid, highestBidder, highestBidderId };
           }
           return item;
         })
       );
 
-      if (highestBidder !== currentUserId) {
+      if (highestBidderId !== currentUserId) {
         setFlashingItems((prev) => new Set(prev).add(itemId));
 
         setTimeout(() => {
@@ -76,14 +76,15 @@ export const useAuctionSocket = (currentUserId, setItems) => {
     setSocket(newSocket);
 
     return () => newSocket.disconnect();
-  }, [currentUserId, setItems]);
+  }, [currentUserId, userName, setItems]);
 
   const placeBid = (itemId, amount) => {
     if (!socket) return;
 
     socket.emit("BID_PLACED", {
       itemId,
-      bidderId: currentUserId,
+      userId: currentUserId,
+      userName: userName,
       amount,
     });
   };

@@ -6,6 +6,7 @@ export function ItemCard({
   item,
   onBid,
   currentUserId,
+  currentUserName,
   isFlashing,
   isOutbid,
   serverTimeOffset,
@@ -19,7 +20,7 @@ export function ItemCard({
   const [notifiedWinning, setNotifiedWinning] = useState(false);
   const [notifiedOutbid, setNotifiedOutbid] = useState(false);
   
-  const isWinning = item.highestBidder === currentUserId;
+  const isWinning = item.highestBidderId === currentUserId;
   const isAuctionEnded = timeRemaining <= 0;
   const isUrgent = timeRemaining < 60000; // Less than 1 minute
 
