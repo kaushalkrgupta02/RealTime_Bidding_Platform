@@ -4,7 +4,7 @@ A modern, real-time auction platform where multiple users can bid simultaneously
 
 ## Quick Start
 
-### Option 1: Docker Compose (Recommended) ⚡
+### Option 1: Docker Compose
 
 **Prerequisites:**
 - Docker
@@ -62,7 +62,7 @@ The platform uses **Socket.io** for real-time bidding synchronization. Here's th
 3. **Second Tab**: Login as "Bob"
 4. **Third Tab**: Login as "Charlie"
 5. **Alice bids** on "Indian Cricket Jersey" → Watch Bob & Charlie's screens **instantly update**
-6. **Bob outbids Alice** → Alice sees "⚠️ Outbid" notification, Bob sees "👑 Winning"
+6. **Bob outbids Alice** → Alice sees "Outbid" notification, Bob sees "Winning"
 7. **Watch timers countdown** in real-time across all tabs
 8. **See notification center** (bell icon) track all bidding history
 
@@ -133,7 +133,7 @@ live_bidding_paltform/
 - **Docker Compose** - Multi-container application setup
 - **Alpine Linux** - Lightweight base images (Node.js 20)
 
-## 🐳 Docker Build Process
+### Docker Build Process
 
 When you run `docker-compose up`, here's what happens:
 
@@ -143,58 +143,17 @@ When you run `docker-compose up`, here's what happens:
 4. **Copy Source Code** - Copies your app files
 5. **Start Development Servers** - Runs `npm run dev` with hot reload
 
-**Why .dockerignore matters:**
-- **Before**: 21MB backend + 104MB frontend = 125MB+ transfer time
-- **After**: ~2MB total - Excludes node_modules, .git, logs, etc.
-- **Result**: 60x faster builds! ⚡
 
-**Why npm cache clean:**
-- Fixes rollup optional dependency bugs in Docker environments
-- Ensures clean dependency installation
-
-### Docker Commands
-
-```bash
-# Start all services
-docker-compose up
-
-# Start in background
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Remove volumes too
-docker-compose down -v
-
-# Rebuild images
-docker-compose up --build
-
-# Run specific service
-docker-compose up backend
-```
-
-### Advantages of Docker
-
-✅ **No Installation Needed** - Just have Docker  
-✅ **Consistent Environment** - Works same on Mac, Windows, Linux  
-✅ **Hot Reload** - Source code volumes allow live changes  
-✅ **Easy Scaling** - Add more services with one config  
-✅ **Clean** - Isolates from system Node/npm versions  
-✅ **Production Ready** - Same setup for dev and production
 
 ## Example Scenario
 
 **10:00 AM** - Alice logs in
 **10:01 AM** - Bob opens in another tab
 **10:02 AM** - Alice bids $550 on Item 1
-  → Bob's screen instantly shows: `Current Bid: $550` | `Bidder: Alice`
+  => Bob's screen instantly shows: `Current Bid: $550` | `Bidder: Alice`
 **10:03 AM** - Bob bids $560
-  → Alice sees: "Outbid by Bob"
-  → Bob sees: "You're winning!"
+  => Alice sees: "Outbid by Bob"
+  => Bob sees: "You're winning!"
 **10:39 AM** - Item 1 auction ends
   → Winner announcement: Bob (final bid: $560)
 
