@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Login from './components/Login';
+import Login from './components/login';
 import { ItemCard } from './components/ItemCard';
 import { useAuctionSocket } from './hooks/auctionSocket';
 import { fetchItems } from './services/item';
