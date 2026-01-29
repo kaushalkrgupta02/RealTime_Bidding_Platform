@@ -10,7 +10,7 @@ export const useAuctionSocket = (currentUserId, setItems, userName) => {
   useEffect(() => {
     if (!currentUserId) return;
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL_LOCAL || "http://localhost:3000";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     const newSocket = io(backendUrl, {
       reconnection: true,
