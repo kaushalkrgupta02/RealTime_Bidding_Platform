@@ -16,7 +16,7 @@ cd live_bidding_paltform
 docker-compose up
 ```
 
-That's it! 🎉 The app is running:
+That's it! The app is running:
 - **Frontend:** http://localhost:5173
 - **Backend:** http://localhost:3000
 
@@ -67,6 +67,13 @@ The platform uses **Socket.io** for real-time bidding synchronization. Here's th
 8. **See notification center** (bell icon) track all bidding history
 
 **The magic**: All users see the same bidder name and current bid instantly—no refresh needed!
+
+## API Routes
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/items` | Fetch all active auction items with live bidding data. |
+| `GET` | `/api/items/:id` | Get details for a specific auction item by ID. |
 
 ## Project Structure
 
