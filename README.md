@@ -164,7 +164,9 @@ When you run `docker-compose up`, here's what happens:
 **10:39 AM** - Item 1 auction ends
   → Winner announcement: Bob (final bid: $560)
 
-All without any page refresh! ⚡
+All without any page refresh!
 
-**Made with ❤️ for real-time enthusiasts**
+
+
+**Made with ❤️ for Levich**
 
